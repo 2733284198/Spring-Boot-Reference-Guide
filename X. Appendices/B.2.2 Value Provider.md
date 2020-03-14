@@ -2,7 +2,7 @@
 
 提供者是将语义附加到属性上的一种强大的方式。我们在下面的章节里定义了官方的提供者，你可以为你自己的提示使用它们。但是，必须记住：你最喜欢的IDE可能实现了其中的一部分，或者什么也没有实现。它也可以最后提供它自己。
 
-**注** 由于这是一个新特性，IDE供应商将不得不追上这个新特性。
+**注** 由于这是一个新特性，IDE供应商必须跟上它的工作方式。采用时间自然会有所不同。
 
 下面👇的表格总结了支持的提供者的列表：
 
@@ -15,208 +15,196 @@
 |`spring-bean-reference`|自动补全当前项目里可用的bean的名字。通常被一个由`目标`参数指定的基础的类约束|
 |`spring-profile-name`|自动补全当前项目里可用的Spring profile的名字|
 
-**提示** 对于一个给定的属性，只能有一个有效的提供者。但是，如果可以以某种方式共同管理属性，你也可以指定多个提供者。确保把最强大的提供者放在第一位，因为IDE必须使用它能够处理的JSON部分里的第一个。如果对于一个给定的属性，没有提供者提供支持，也不会有特殊的内容帮助被提供。
+**注** 对于一个给定的属性，只能有一个有效的提供者。但是，如果可以以某种方式共同管理属性，你也可以指定多个提供者。确保把最强大的提供者放在第一位，因为IDE必须使用它能够处理的JSON部分里的第一个。如果对于一个给定的属性，没有提供者提供支持，也不会有特殊的内容帮助被提供。
 
 **Any**
 
-The any provider permits any additional values to be provided. Regular value validation based on the property type should be applied if this is supported.
+特殊的**any**提供程序值允许提供任何附加值。如果支持，应该应用基于属性类型的常规值验证。
 
-This provider will be typically used if you have a list of values and any extra values are still to be considered as valid.
+如果你有一个值列表，并且任何额外的值仍然被认为是有效的，则通常使用此提供程序。
 
-The example below offers on and off as auto-completion values for system.state; any other value is also allowed:
-
+下面的例子提供了`on`和`off`作为`system.state`的自动完成值：
+```json
 {"hints": [
-    {
-        "name": "system.state",
-        "values": [
-            {
-                "value": "on"
-            },
-            {
-                "value": "off"
-            }
-        ],
-        "providers": [
-            {
-                "name": "any"
-            }
-        ]
-    }
+	{
+		"name": "system.state",
+		"values": [
+			{
+				"value": "on"
+			},
+			{
+				"value": "off"
+			}
+		],
+		"providers": [
+			{
+				"name": "any"
+			}
+		]
+	}
 ]}
-Class reference
+```
+注意，在前面的示例中，还允许任何其他值。
 
-The class-reference provider auto-completes classes available in the project. This provider supports these parameters:
+**Class Reference**
 
-Parameter   Type    Default value   Description
-target
+**class-reference**提供程序自动完成项目中可用的类。该提供程序支持以下参数：
+|参数|类型|默认值|描述|
+|----|:----|:----|:----|
+|`target`|`String`（`Class`）|none|应该分配给所选值的类的完全限定名。通常用于过滤非候选类。请注意，此信息可以由类型本身提供，方法是公开具有适当上限的类。|
+|`concrete`|`boolean`|true|指定是否只将具体类视为有效的候选类。|
 
-String (Class)
-
-none
-
-The fully qualified name of the class that should be assignable to the chosen value. Typically used to filter out non candidate classes. Note that this information can be provided by the type itself by exposing a class with the appropriate upper bound.
-
-concrete
-
-boolean
-
-true
-
-Specify if only concrete classes are to be considered as valid candidates.
-
-The meta-data snippet below corresponds to the standard server.servlet.jsp.class-name property that defines the JspServlet class name to use:
-
+下面的元数据片段对应于标准的`server.servlet.jsp.class-name`属性定义了要使用的`JspServlet`类名：
+```json
 {"hints": [
-    {
-        "name": "server.servlet.jsp.class-name",
-        "providers": [
-            {
-                "name": "class-reference",
-                "parameters": {
-                    "target": "javax.servlet.http.HttpServlet"
-                }
-            }
-        ]
-    }
+	{
+		"name": "server.servlet.jsp.class-name",
+		"providers": [
+			{
+				"name": "class-reference",
+				"parameters": {
+					"target": "javax.servlet.http.HttpServlet"
+				}
+			}
+		]
+	}
 ]}
-Handle As
+```
 
-The handle-as provider allows you to substitute the type of the property to a more high-level type. This typically happens when the property has a java.lang.String type because you don’t want your configuration classes to rely on classes that may not be on the classpath. This provider supports these parameters:
+**Handle As**
 
-Parameter   Type    Default value   Description
-target
+**handle-as**提供程序允许您将属性的类型替换为更高级的类型。当属性具有`java.lang.String`类型时，通常会发生这种情况。因为你不希望配置类依赖于可能不在类路径上的类。该提供程序支持以下参数：
 
-String (Class)
+|参数|类型|默认值|描述|
+|----|:----|:----|:----|
+|`target`|`String`（`Class`）|none|要考虑用于属性的类型的完全限定名。这个参数是强制性的。|
 
-none
+可以使用以下类型：
 
-The fully qualified name of the type to consider for the property. This parameter is mandatory.
+- 任何`java.lang.Enum`：列出属性的可能值。（我们建议使用`Enum`类型定义属性，因为IDE不需要进一步的提示就可以自动完成这些值。）
+- `java.nio.charset.Charset`：支持自动完成字符集/编码值（如`UTF-8`）
+- `java.util.Locale`：自动完成区域设置（如`en_US`）
+- `org.springframework.util.MimeType`：支持自动完成内容类型值（例如`text/plain`）
+- `org.springframework.core.io.Resource`：支持自动完成Spring的资源抽象，以引用文件系统或类路径上的文件。（如`classpath:/sample.properties`）
 
-The following types can be used:
+**注** 如果可以提供多个值，则使用`集合`或数组类型来教导IDE。
 
-Any java.lang.Enum that lists the possible values for the property (By all means, try to define the property with the Enum type instead as no further hint should be required for the IDE to auto-complete the values).
-java.nio.charset.Charset: auto-completion of charset/encoding values (e.g. UTF-8)
-java.util.Locale: auto-completion of locales (e.g. en_US)
-org.springframework.util.MimeType: auto-completion of content type values (e.g. text/plain)
-org.springframework.core.io.Resource: auto-completion of Spring’s Resource abstraction to refer to a file on the filesystem or on the classpath. (e.g. classpath:/foo.properties)
-[Note]
-If multiple values can be provided, use a Collection or Array type to teach the IDE about it.
-The meta-data snippet below corresponds to the standard liquibase.change-log property that defines the path to the changelog to use. It is actually used internally as a org.springframework.core.io.Resource but cannot be exposed as such as we need to keep the original String value to pass it to the Liquibase API.
-
+下面的元数据片段对应于标准的`spring.liquibase.change-log`属性，定义要使用的更改日志的路径。它实际上是作为一个`org.springframework.core.io.Resource`在内部使用的。但是不能这样公开，因为我们需要保留原始的字符串值，以便将它传递给Liquibase API。
+```json
 {"hints": [
-    {
-        "name": "liquibase.change-log",
-        "providers": [
-            {
-                "name": "handle-as",
-                "parameters": {
-                    "target": "org.springframework.core.io.Resource"
-                }
-            }
-        ]
-    }
+	{
+		"name": "spring.liquibase.change-log",
+		"providers": [
+			{
+				"name": "handle-as",
+				"parameters": {
+					"target": "org.springframework.core.io.Resource"
+				}
+			}
+		]
+	}
 ]}
-Logger name
+```
 
-The logger-name provider auto-completes valid logger names. Typically, package and class names available in the current project can be auto-completed. Specific frameworks may have extra magic logger names that could be supported as well.
+**Logger Name**
 
-Since a logger name can be any arbitrary name, really, this provider should allow any value but could highlight valid packages and class names that are not available in the project’s classpath.
+**logger-name**提供程序自动完成有效的日志程序名称。通常，当前项目中可用的包名和类名可以自动完成。特定的框架可能有额外的、也可以支持的神奇日志程序名称。
 
-The meta-data snippet below corresponds to the standard logging.level property, keys are logger names and values correspond to the standard log levels or any custom level:
+由于记录器名称可以是任意的名称，因此该提供程序应该允许任何值，但是可以突出显示项目的类路径中不可用的有效包和类名称。
 
+下面的元数据片段对应于标准`logging.level`属性。键是记录器名称，值对应于标准日志级别或任何自定义级别。
+```json
 {"hints": [
-    {
-        "name": "logging.level.keys",
-        "values": [
-            {
-                "value": "root",
-                "description": "Root logger used to assign the default logging level."
-            }
-        ],
-        "providers": [
-            {
-                "name": "logger-name"
-            }
-        ]
-    },
-    {
-        "name": "logging.level.values",
-        "values": [
-            {
-                "value": "trace"
-            },
-            {
-                "value": "debug"
-            },
-            {
-                "value": "info"
-            },
-            {
-                "value": "warn"
-            },
-            {
-                "value": "error"
-            },
-            {
-                "value": "fatal"
-            },
-            {
-                "value": "off"
-            }
+	{
+		"name": "logging.level.keys",
+		"values": [
+			{
+				"value": "root",
+				"description": "Root logger used to assign the default logging level."
+			}
+		],
+		"providers": [
+			{
+				"name": "logger-name"
+			}
+		]
+	},
+	{
+		"name": "logging.level.values",
+		"values": [
+			{
+				"value": "trace"
+			},
+			{
+				"value": "debug"
+			},
+			{
+				"value": "info"
+			},
+			{
+				"value": "warn"
+			},
+			{
+				"value": "error"
+			},
+			{
+				"value": "fatal"
+			},
+			{
+				"value": "off"
+			}
 
-        ],
-        "providers": [
-            {
-                "name": "any"
-            }
-        ]
-    }
+		],
+		"providers": [
+			{
+				"name": "any"
+			}
+		]
+	}
 ]}
-Spring bean reference
+```
 
-The spring-bean-reference provider auto-completes the beans that are defined in the configuration of the current project. This provider supports these parameters:
+Spring Bean Reference
 
-Parameter   Type    Default value   Description
-target
+`spring-bean-reference`提供程序自动完成当前项目配置中定义的bean。该提供程序支持以下参数：
 
-String (Class)
+|参数|类型|默认值|描述|
+|----|:----|:----|:----|
+|`target`|`String`（`Class`）|none|bean类的应可赋值给候选者的完全限定名。通常用于过滤非候选bean。|
 
-none
-
-The fully qualified name of the bean class that should be assignable to the candidate. Typically used to filter out non candidate beans.
-
-The meta-data snippet below corresponds to the standard spring.jmx.server property that defines the name of the MBeanServer bean to use:
-
+下面的元数据片段对应于标准的`spring.jmx.server`属性，定义要使用的`MBeanServer` bean的名称：
+```json
 {"hints": [
-    {
-        "name": "spring.jmx.server",
-        "providers": [
-            {
-                "name": "spring-bean-reference",
-                "parameters": {
-                    "target": "javax.management.MBeanServer"
-                }
-            }
-        ]
-    }
+	{
+		"name": "spring.jmx.server",
+		"providers": [
+			{
+				"name": "spring-bean-reference",
+				"parameters": {
+					"target": "javax.management.MBeanServer"
+				}
+			}
+		]
+	}
 ]}
-[Note]
-The binder is not aware of the meta-data so if you provide that hint, you will still need to transform the bean name into an actual Bean reference using the ApplicationContext.
-Spring profile name
+```
 
-The spring-profile-name provider auto-completes the Spring profiles that are defined in the configuration of the current project.
+**注** 绑定器不知道元数据。如果你提供了那个提示，你仍然需要将bean名称转换为`ApplicationContext`使用的实际bean引用。
 
-The meta-data snippet below corresponds to the standard spring.profiles.active property that defines the name of the Spring profile(s) to enable:
+Spring Profile Name
 
+`spring-profile-name`提供程序自动完成在当前项目的配置中定义的Spring配置文件。
+
+下面的元数据片段对应于标准的`spring.profiles.active`属性，定义要启用的Spring配置文件的名称：
+```json
 {"hints": [
-    {
-        "name": "spring.profiles.active",
-        "providers": [
-            {
-                "name": "spring-profile-name"
-            }
-        ]
-    }
+	{
+		"name": "spring.profiles.active",
+		"providers": [
+			{
+				"name": "spring-profile-name"
+			}
+		]
+	}
 ]}
-
-
+```
