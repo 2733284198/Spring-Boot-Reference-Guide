@@ -580,7 +580,7 @@
    * [附录C. 自动配置类](X. Appendices/C. Auto-configuration classes.md)
       * [附录C.1. 来自spring-boot-autoconfigure模块](X. Appendices/C.1. From the “spring-boot-autoconfigure” module.md)
       * [附录C.2. 来自spring-boot-actuator-autoconfigure模块](X. Appendices/C.2. From the “spring-boot-actuator-autoconfigure” module.md)
-   * [附录D. 测试自动配置的标注](X. Appendices/D. Test auto-configuration annotations.md)
+   * [附录D. 测试的自动配置的标注](X. Appendices/D. Test auto-configuration annotations.md)
    * [附录E. 可执行jar格式](X. Appendices/E. The executable jar format.md)
       * [附录E.1. 内嵌JARs](X. Appendices/E.1. Nested JARs.md)
          * [附录E.1.1. 可执行jar文件结构](X. Appendices/E.1.1. The executable jar file structure.md)
