@@ -1,4 +1,4 @@
-### 附录 E.1.1 可执行jar文件结构
+### 附录 E.1.1 可执行Jar文件结构
 
 Spring Boot Loader兼容的jar文件应该遵循以下结构：
 
