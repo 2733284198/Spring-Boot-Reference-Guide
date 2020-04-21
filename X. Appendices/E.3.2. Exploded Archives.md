@@ -5,4 +5,3 @@
 $ unzip -q myapp.jar
 $ java org.springframework.boot.loader.JarLaunche
 ```
-
